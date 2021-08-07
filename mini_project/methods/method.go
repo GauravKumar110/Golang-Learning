@@ -8,23 +8,31 @@ import (
 
 	models "Golang-Learning/mini_project/models"
 
+	"io/ioutil"
+
+	"time"
+
 	"github.com/gorilla/mux"
 )
 
-type users struct {
+/*type users struct {
 	Id    int    `json:"id"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
+}*/
+
+type comment struct {
+	Id        int32  `json:"id"`
+	PostId    int32  `json:"postId"`
+	ParentId  int32  `json:"parentId"`
+	Published bool   `json:"published"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
 }
 
-type comments struct {
-	Id        int32  `json:"id"`
-	PostId    int32  `json:"PostId"`
-	ParentId  int32  `json:"ParentId"`
-	Published bool   `json:"Published"`
-	Content   string `json:"Content"`
-	CreatedAt string `json:"CreatedAt"`
-	UpdatedAt string `json:"UpdatedAt"`
+type commentData struct {
+	Comments []comment `json:"post"`
 }
 
 type response struct {
@@ -47,7 +55,28 @@ func recordInsert(w http.ResponseWriter, r *http.Request) {
 		panic("Database error")
 	}
 
-	results, err := DbObj.Query("Insert into comment (post_id,parent_id,published,content,created_at,updated_at) value (1,1,0,'test','2021-07-26','2021-07-26')")
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		http.Error(w, "Error reading request body",
+			http.StatusInternalServerError)
+	}
+
+	var comment comment
+	currentTime := time.Now()
+
+	byteCode := body
+	json.Unmarshal(byteCode, &comment)
+
+	//	fmt.Println(comment)
+
+	//query := "Insert into comment (id,post_id,parent_id,published,content,created_at,updated_at) value (" + comment.Id + "," + comment.PostId + "," + comment.ParentId + "," + comment.Published + "," + comment.Content + "," + comment.CreatedAt + "," + comment.UpdatedAt + ")"
+
+	query := fmt.Sprintf("Insert into comment (post_id,parent_id,published,content,created_at,updated_at) value (%d,%d,%v,'%s','%s','%s')", comment.PostId, comment.ParentId, comment.Published, comment.Content, currentTime.Format("2006-01-02 15:04:05"), currentTime.Format("2006-01-02 15:04:05"))
+
+	//results, err := DbObj.Query("Insert into comment (post_id,parent_id,published,content,created_at,updated_at) value (1,1,0,'test','2021-07-26','2021-07-26')")
+
+	results, err := DbObj.Query(query)
 
 	if err != nil {
 		panic(err.Error())
@@ -67,7 +96,7 @@ func recordInsert(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
-func recordSelect(w http.ResponseWriter, r *http.Request) {
+func recordSelect(w http.ResponseWriter, r http.Request) {
 
 	DbObj, err := models.DatabaseConnection()
 
@@ -81,30 +110,39 @@ func recordSelect(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	commentData := []comments{}
+	comments := []comment{}
+	//var commentData commentData
 
 	for results.Next() {
 
-		comment := comments{}
+		var comment comment
 
 		err := results.Scan(&comment.Id, &comment.PostId, &comment.ParentId, &comment.Published, &comment.Content, &comment.CreatedAt, &comment.UpdatedAt)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		commentData = append(commentData, comment)
+		comments = append(comments, comment)
 
-		w.WriteHeader(http.StatusOK)
+		//commentData.Comments = append(commentData.Comments, comment)
+
+		//w.WriteHeader(http.StatusOK)
 
 	}
-	data, err := json.Marshal(commentData)
+
+	var commentData commentData
+	commentData.Comments = comments
+	//data, err := json.Marshal(comments)
 
 	if err != nil {
 		fmt.Println("Eror while Marshaling")
 	}
 
-	fmt.Println(string(data))
+	//fmt.Println(string(data))
 	json.NewEncoder(w).Encode(commentData)
+
+	//data['post'] = comments
+	//return json{data}
 }
 
 /*

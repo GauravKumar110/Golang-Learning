@@ -1,0 +1,6 @@
+DB:
+  HOST: "localhost"
+  PORT: "3306"
+  USERNAME: "root"
+  PASWORD: "Gaurav@1234"
+  NAME: "blog"
