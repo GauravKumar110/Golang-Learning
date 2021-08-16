@@ -96,10 +96,10 @@ func recordInsert(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 }
 
-func recordSelect(w http.ResponseWriter, r http.Request) {
-
+func recordSelect(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("recordSelect")
 	DbObj, err := models.DatabaseConnection()
-
+	//fmt.Println(DbObj)
 	if err != nil {
 		panic("Database error")
 	}

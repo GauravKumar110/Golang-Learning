@@ -9,13 +9,37 @@ import (
 	"github.com/spf13/viper"
 )
 
+/*
+type PubSubConfig struct {
+	TopicTransactionFailed        string mapstructure:"TOPIC_TRANSACTION_FAILED"
+	SubscriptionTransactionFailed string mapstructure:"SUBSCRIPTION_TRANSACTION_FAILED"
+	TopicTransactionSuccess       string mapstructure:"TOPIC_TRANSACTION_SUCCESS"
+	ProjectId                     string mapstructure:"GCP_PROJECT_ID"
+}
+
+type DBDetail struct {
+	DBPort     string ""
+	DBHost     string ""
+	DBUserName string ""
+	DBPassword string ""
+}
+
+var pubSubConfig PubSubConfig
+
+func initPubSubConfig(environment string) {
+	//var pubSubConfig PubSubConfig
+	switch strings.ToUpper(environment) {
+	case "TEST":
+
+	case "APP":
+		viper.Unmarshal(&pubSubConfig)
+
+	}
+
+}*/
+
 func DatabaseConnection() (*sql.DB, error) {
 	fmt.Println("Go MySQL Tutorial")
-	/*serverName := "ayopop-core-stage-cluster.cluster-cnwudf2a1war.ap-south-1.rds.amazonaws.com:3306"
-	user := "gaurav.kumar"
-	password := "EB@3BrDG~~`#$L_4"
-	dbName := "develop_ayopop" */
-
 	viper.SetConfigName("config")
 
 	// Set the path to look for the configurations file
@@ -26,18 +50,16 @@ func DatabaseConnection() (*sql.DB, error) {
 
 	viper.SetConfigType("yml")
 
+	//	fmt.Println(viper.ReadInConfig())
+
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)
 	}
 
-	// Set undefined variables
-	//viper.SetDefault("DB.HOST", "127.0.0.1")
-
-	// getting env variables DB.PORT
-	// viper.Get() returns an empty interface{}
+	//	fmt.Println(viper.ReadInConfig())
 	// so we have to do the type assertion, to get the value
 	DBPort, ok := viper.Get("DB.PORT").(string)
-
+	//	fmt.Println(DBPort)
 	// if type assert is not valid it will throw an error
 	if !ok {
 		log.Fatalf("Invalid type assertion")
@@ -71,7 +93,7 @@ func DatabaseConnection() (*sql.DB, error) {
 		log.Fatalf("Invalid type assertion")
 	}
 
-	fmt.Printf("viper : %s = %s \n", "Database Port", DBPort)
+	//fmt.Printf("viper : %s = %s \n", "Database Port", DBPort)
 
 	serverName := DBHost + ":" + DBPort
 	user := DBUserName
